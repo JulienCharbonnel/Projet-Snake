@@ -1,23 +1,17 @@
 import java.util.Timer;
 import java.util.TimerTask;
-import java.awt.Graphics;
 import java.awt.Color;
-import java.awt.Font;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
-import java.awt.FontMetrics;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
 import java.awt.Point;
 
 public class GamePanel {
@@ -129,6 +123,7 @@ public class GamePanel {
       */
 
       // <---------- Pomme ---------->
+
       rand = new Random();
       // on ajoute une pomme aléatoire sur la grille de jeu
       appleX = rand.nextInt(xCoordCase);
@@ -138,12 +133,6 @@ public class GamePanel {
 
       // <---------- Serpent ---------->
       
-      // on initialise les coordonnées du serpent
-      for (int i = 0; i < bodyParts; i++) {
-         // on centre le serpent au centre de la grille de jeu
-         coordSerp.add(new Point(xCoordCase / 2, yCoordCase / 2));
-      }
-
       // on ajoute le serpent sur la grille de jeu avec notre méthode creerSerpent()
       creerSerpent(panneau);
 
@@ -161,8 +150,13 @@ public class GamePanel {
    public void creerSerpent(JPanel panneau) {
       // on crée une boucle qui permet de créer le serpent
       for (int i = 0; i < bodyParts; i++) {
+         // on positionne le serpent aléatoirement sur la grille de jeu
+         x[i] = rand.nextInt(xCoordCase);
+         y[i] = rand.nextInt(yCoordCase);
+         // on ajoute les coordonnées du serpent dans la file
+         coordSerp.add(new Point(x[i], y[i]));
          // on change la couleur de la case qui contient le serpent
-         panneau.getComponent(xCoordCase + yCoordCase * xCoordCase).setBackground(Color.GREEN);
+         panneau.getComponent(x[i] + y[i] * xCoordCase).setBackground(Color.GREEN);
       }
    }
 
@@ -187,7 +181,7 @@ public class GamePanel {
 
 
    // méthode qui écoute les flèches directionnelles du clavier avec notre classe Direction
-   public void ecouteDirectionSerpent(KeyEvent e) {
+   public int ecouteDirectionSerpent(KeyEvent e) {
       int key = e.getKeyCode();
       if ((key == KeyEvent.VK_LEFT) && direction != Direction.EST) {
          direction = Direction.OUEST;
@@ -201,50 +195,12 @@ public class GamePanel {
       if ((key == KeyEvent.VK_DOWN) && direction != Direction.NORD) {
          direction = Direction.SUD;
       }
+      // on renvoie key
+      return key;
    }
 
 
-
-   // méthode move() qui permet de déplacer le serpent en fonction des évenements qu'on a reçu
-   public void mouvement(){
-      // on parcourt la file
-      for (int i = coordSerp.size() - 1; i >= 0; i--) {
-
-         // on vérifie si la tête du serpent est sur la pomme
-         if (pointTeteSerpet.equals(pointPomme)) {
-            // on ajoute une case à la queue du serpent
-            coordSerp.add(pointQueueSerpent);
-            // on génère une nouvelle pomme
-            newApple();
-            // on augmente le score
-            score++;
-         }
-
-         // on vérifie si la tête du serpent est sur la queue du serpent
-         if (pointTeteSerpet.equals(pointQueueSerpent)) {
-            // on arrête le jeu
-            running = false;
-         }
-
-         // on vérifie si la tête du serpent est sur les bords de la grille de jeu
-         if (pointTeteSerpet.x < 0 || pointTeteSerpet.x > xCoordCase || pointTeteSerpet.y < 0 || pointTeteSerpet.y > yCoordCase) {
-            // on arrête le jeu
-            running = false;
-         }
-
-         // on vérifie si le serpent c'est manger lui même
-         if (i != 0 && pointTeteSerpet.equals(pointCorpsSerpent)) {
-            // on arrête le jeu
-            running = false;
-         } 
-      }
-   }
-
-
-   //<----------------------------------------------------->
-
-
-   // méthode qui permet de mettre à jour le jeu
+   // méthode qui permet de faire bouger le serpent
    public void directionSerpent() {
       // on vérifie si le jeu est en cours
       if (running) {
@@ -277,6 +233,74 @@ public class GamePanel {
             ((LinkedList<Point>) coordSerp).removeLast();
          }
       }
+   }
+
+
+
+   // <-------------------------------------------------------------------------------------------------------------------------------------------->
+
+
+
+
+
+   // <----------------------- On s'occupe ici de la collision du serpent avec les murs et si il a manger une pomme ----------------------->
+
+   // méthode qui permet de vérifier si le serpent a mangé une pomme
+   public void mangerPomme() {
+      // on vérifie si le serpent a mangé une pomme
+      if (((LinkedList<Point>) coordSerp).getFirst().equals(new Point(appleX, appleY))) {
+         // on ajoute une case au serpent
+         bodyParts++;
+         // on génère une nouvelle pomme
+         newApple();
+      }
+   }
+
+   // méthode qui permet de vérifier si le serpent a touché un mur ou c'est touché lui-même
+   public void verifierCollision() {
+      // on vérifie si le serpent a touché un mur
+      if (((LinkedList<Point>) coordSerp).getFirst().x < 0) {
+         running = false;
+      }
+      if (((LinkedList<Point>) coordSerp).getFirst().x > xCoordCase) {
+         running = false;
+      }
+      if (((LinkedList<Point>) coordSerp).getFirst().y < 0) {
+         running = false;
+      }
+      if (((LinkedList<Point>) coordSerp).getFirst().y > yCoordCase) {
+         running = false;
+      }
+      // on vérifie si le serpent s'est touché lui-même
+      if (coordSerp.size() > bodyParts) {
+         for (int i = bodyParts; i < coordSerp.size(); i++) {
+            if (((LinkedList<Point>) coordSerp).getFirst().equals(((LinkedList<Point>) coordSerp).get(i))) {
+               running = false;
+            }
+         }
+      }
+      // si le jeu n'est pas en cours
+      if (!running) {
+         // on affiche un message
+         JOptionPane.showMessageDialog(null, "Game Over");
+      }
+   }
+
+
+   // <---------------------------------------------------------------------------------------------->
+
+
+
+
+   // <----------- On s'occupe ici de l'affichage du score et des conditions de victoire ----------->
+
+   // méthode qui permet de mettre à jour le score
+   public void updateScore() {
+      // on met à jour le score
+      score = bodyParts - 6;
+      JLabel scoreLabel = new JLabel("Score : " + score);
+      // on affiche le score
+      scoreLabel.setText("Score : " + score);
    }
 
    // méthode qui calcule la condition de victoire
@@ -315,18 +339,8 @@ public class GamePanel {
          public void run(){
             // on vérifie si le jeu est en cours
             if(running){
-               // on déplace le serpent
-               move();
-               // on vérifie les collisions
-               checkCollisions();
-               // on vérifie si le serpent a mangé une pomme
-               checkApple();
-               // on vérifie si le serpent a gagné
-               checkVictory();
-               // on vérifie si le serpent a perdu
-               checkDefeat();
-               // on calcule le score
-               calculateScore();
+
+
             }
          }
       }, 0, 100);
@@ -341,10 +355,11 @@ public class GamePanel {
       System.exit(0);
    }
 
-
    // méthode qui permet de savoir si le jeu est en cours
    public boolean isRunning(){
       return running;
    }
+
+   // <----------------------------------------------->
 
 }
