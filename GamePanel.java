@@ -317,8 +317,8 @@ public class GamePanel {
       new Thread(new Runnable() {
          @Override
          public void run() {
-           // on fais avancer le serpent seulement si on a choisi une direction avec les flèches directionnelles
-            while () {
+           // on fais avancer tant que le serpent n'est pas mort
+            while (running) {
                try {
                   // on fais avancer le serpent toutes les 60 images par seconde
                   Thread.sleep(16);
