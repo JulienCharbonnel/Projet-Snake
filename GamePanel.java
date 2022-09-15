@@ -13,10 +13,12 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.lang.Thread;
 
 public class GamePanel {
    // on crée une variable de type JFrame
    public static JFrame fenetre;
+   public JPanel panneau;
    // taille de la grille de jeu
    public final static int WIDTH = 1900;
    public final static int HEIGHT = 1080;
@@ -55,6 +57,8 @@ public class GamePanel {
    // file Queue<E> qui contient les coordonnées des cases du serpent avec Point(x,y)
    public static Queue<Point> coordSerp = new LinkedList<Point>();
 
+   // <--------------- Getter et setter --------------->
+
    // on récupère les coordonnées du serpent
    public static Queue<Point> getCoordSerp() {
       return coordSerp;
@@ -85,14 +89,17 @@ public class GamePanel {
       ((LinkedList<Point>) coordSerp).addFirst(coordTete);
    }
 
+   // <--------------------------------------------------------->
+
 
    // <----------- On crée la fenêtre de jeu ----------->
 
    // méthode qui permet de créer une grille de jeu
    protected void grille() {
       fenetre = new JFrame("Snake");
+      panneau = new JPanel();
+      panneau.setLayout(new GridLayout(25, 25, 1, 1));
       // méthode qui permet de redessiner la grille de jeu avec GridLayout
-      JPanel panneau = new JPanel(new GridLayout(25, 25, 1, 1));
       // on crée une bordure autour de la grille de jeu
       panneau.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
       // on crée une boucle qui permet de créer 25 lignes et 25 colonnes
@@ -123,19 +130,18 @@ public class GamePanel {
       */
 
       // <---------- Pomme ---------->
+      // on crée une pomme
+      nouvellePomme(panneau);
 
-      rand = new Random();
-      // on ajoute une pomme aléatoire sur la grille de jeu
-      appleX = rand.nextInt(xCoordCase);
-      appleY = rand.nextInt(yCoordCase);
-      // on change la couleur de la case qui contient la pomme
-      panneau.getComponent(appleX + appleY * xCoordCase).setBackground(Color.RED);
+
 
       // <---------- Serpent ---------->
+      creerSerpent(panneau);
       
       // on ajoute le serpent sur la grille de jeu avec notre méthode creerSerpent()
-      creerSerpent(panneau);
+      //creerSerpent(panneau);
 
+      // on ajoute le panneau à la fenêtre
       fenetre.add(panneau);
       fenetre.setSize(WIDTH, HEIGHT);
       fenetre.pack();
@@ -148,32 +154,40 @@ public class GamePanel {
 
    // méthode qui créer le serpent avec un JLabel
    public void creerSerpent(JPanel panneau) {
-      // on crée une boucle qui permet de créer le serpent
-      for (int i = 0; i < bodyParts; i++) {
-         // on positionne le serpent aléatoirement sur la grille de jeu
-         x[i] = rand.nextInt(xCoordCase);
-         y[i] = rand.nextInt(yCoordCase);
-         // on ajoute les coordonnées du serpent dans la file
-         coordSerp.add(new Point(x[i], y[i]));
-         // on change la couleur de la case qui contient le serpent
-         panneau.getComponent(x[i] + y[i] * xCoordCase).setBackground(Color.GREEN);
+      // on prend 6 JLabel existant au milieu du panneau et on les ajoute à la file
+      for (int i = 0; i < 6; i++) {
+         // on récupère les coordonnées du JLabel au centre du panneau
+         xCoordCase = 12;
+         yCoordCase = 12;
+         // on ajoute les coordonnées du JLabel au centre du panneau à la file
+         coordSerp.add(new Point(xCoordCase, yCoordCase));
+         // on récupère le JLabel au centre du panneau
+         JLabel caseGrille = (JLabel) panneau.getComponent(12 * 25 + 12);
+         // on change la couleur du JLabel au centre du panneau 6 fois en partant du centre
+         for(int j = 0; j < 6; j++) {
+            caseGrille.setBackground(Color.GREEN);
+            xCoordCase++;
+            coordSerp.add(new Point(xCoordCase, yCoordCase));
+            caseGrille = (JLabel) panneau.getComponent(xCoordCase * 25 + yCoordCase);
+
+            // on écoute les touches du clavier pour déplacer le serpent avec notre méthode ecouteDirectionSerpent()
+            ecouteDirectionSerpent();
+            // en fonction du clavier on déplace le serpent avec notre méthode directionSerpent()
+            directionSerpent(panneau);
+         }
+
       }
    }
+   
 
-   // méthode qui permet de créer une pomme
-   public void newApple(){
-      // création d'un nombre aléatoire
-      Random random = new Random();
-      // coordonnées de la pomme
-      appleX = random.nextInt((int) (WIDTH / TAILLE_CASE)) * TAILLE_CASE;
-      appleY = random.nextInt((int) (HEIGHT / TAILLE_CASE)) * TAILLE_CASE;   
-      
-      // on génère une nouvelle pomme si elle est sur le serpent
-      for (int i = bodyParts; i > 0; i--) {
-         if ((x[i] == appleX) && (y[i] == appleY)) {
-            newApple();
-         }
-      }
+   // méthode qui permet de créer une pomme dans un JLabel de la grille de jeu aléatoirement
+   public void nouvellePomme(JPanel panneau) {
+      rand = new Random();
+      // on ajoute une pomme aléatoire sur la grille de jeu
+      appleX = rand.nextInt(xCoordCase);
+      appleY = rand.nextInt(yCoordCase);
+      // on change la couleur de la case qui contient la pomme
+      panneau.getComponent(appleX + appleY * xCoordCase).setBackground(Color.RED);
    }
 
 
@@ -181,8 +195,8 @@ public class GamePanel {
 
 
    // méthode qui écoute les flèches directionnelles du clavier avec notre classe Direction
-   public int ecouteDirectionSerpent(KeyEvent e) {
-      int key = e.getKeyCode();
+   public int ecouteDirectionSerpent() {
+      int key = 0;
       if ((key == KeyEvent.VK_LEFT) && direction != Direction.EST) {
          direction = Direction.OUEST;
       }
@@ -201,7 +215,7 @@ public class GamePanel {
 
 
    // méthode qui permet de faire bouger le serpent
-   public void directionSerpent() {
+   public void directionSerpent(JPanel panneau) {
       // on vérifie si le jeu est en cours
       if (running) {
          // on vérifie si la direction du serpent est vers le nord
@@ -252,7 +266,7 @@ public class GamePanel {
          // on ajoute une case au serpent
          bodyParts++;
          // on génère une nouvelle pomme
-         newApple();
+         nouvellePomme(panneau);
       }
    }
 
@@ -329,22 +343,7 @@ public class GamePanel {
 
    // méthode qui permet de commencer le jeu
    public void startGame(){
-      // on crée la grille de jeu
-      grille();      
-      // on crée une nouvelle pomme
-      newApple();
-      // on lance le timer
-      timer.scheduleAtFixedRate(new TimerTask(){
-         @Override
-         public void run(){
-            // on vérifie si le jeu est en cours
-            if(running){
-
-
-            }
-         }
-      }, 0, 100);
-
+      grille();
    }
 
    // méthode qui permet d'arrêter le jeu

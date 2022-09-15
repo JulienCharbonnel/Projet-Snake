@@ -5,7 +5,8 @@ public class Snake {
    public static void main(String[] args){
       // On apelle notre Classe GamePanel
       grilleJeux = new GamePanel();
-      // on démarrer le jeu
+      // on lance le jeu
       grilleJeux.startGame();
+      
    }
 }
