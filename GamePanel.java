@@ -1,6 +1,7 @@
 import java.util.Timer;
 import java.util.TimerTask;
 import java.awt.Color;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -57,6 +58,7 @@ public class GamePanel {
    // file Queue<E> qui contient les coordonnées des cases du serpent avec Point(x,y)
    public static Queue<Point> coordSerp = new LinkedList<Point>();
 
+
    // <--------------- Getter et setter --------------->
 
    // on récupère les coordonnées du serpent
@@ -87,6 +89,13 @@ public class GamePanel {
    // on créer un setter pour les coordonnées de la tête du serpent
    public static void setCoordTete(Point coordTete) {
       ((LinkedList<Point>) coordSerp).addFirst(coordTete);
+   }
+   // getter et setter pour la direction du serpent
+   public Direction getDirection() {
+      return direction;
+   }
+   public void setDirection(Direction direction) {
+      this.direction = direction;
    }
 
    // <--------------------------------------------------------->
@@ -133,10 +142,9 @@ public class GamePanel {
       // on crée une pomme
       nouvellePomme(panneau);
 
-
-
       // <---------- Serpent ---------->
       creerSerpent(panneau);
+
       
       // on ajoute le serpent sur la grille de jeu avec notre méthode creerSerpent()
       //creerSerpent(panneau);
@@ -155,7 +163,7 @@ public class GamePanel {
    // méthode qui créer le serpent avec un JLabel
    public void creerSerpent(JPanel panneau) {
       // on prend 6 JLabel existant au milieu du panneau et on les ajoute à la file
-      for (int i = 0; i < 6; i++) {
+      for (int i = 0; i < PommeManger; i++) {
          // on récupère les coordonnées du JLabel au centre du panneau
          xCoordCase = 12;
          yCoordCase = 12;
@@ -164,7 +172,7 @@ public class GamePanel {
          // on récupère le JLabel au centre du panneau
          JLabel caseGrille = (JLabel) panneau.getComponent(12 * 25 + 12);
          // on change la couleur du JLabel au centre du panneau 6 fois en partant du centre
-         for(int j = 0; j < 6; j++) {
+         for(int j = 0; j < PommeManger; j++) {
             caseGrille.setBackground(Color.GREEN);
             xCoordCase++;
             coordSerp.add(new Point(xCoordCase, yCoordCase));
@@ -172,8 +180,6 @@ public class GamePanel {
 
             // on écoute les touches du clavier pour déplacer le serpent avec notre méthode ecouteDirectionSerpent()
             ecouteDirectionSerpent();
-            // en fonction du clavier on déplace le serpent avec notre méthode directionSerpent()
-            directionSerpent(panneau);
          }
 
       }
@@ -198,62 +204,59 @@ public class GamePanel {
    public int ecouteDirectionSerpent() {
       int key = 0;
       if ((key == KeyEvent.VK_LEFT) && direction != Direction.EST) {
-         direction = Direction.OUEST;
+         setDirection(Direction.EST);
       }
       if ((key == KeyEvent.VK_RIGHT) && direction != Direction.OUEST) {
-         direction = Direction.EST;
+         setDirection(Direction.OUEST);
       }
       if ((key == KeyEvent.VK_UP) && direction != Direction.SUD) {
-         direction = Direction.NORD;
+         setDirection(Direction.SUD);
       }
       if ((key == KeyEvent.VK_DOWN) && direction != Direction.NORD) {
-         direction = Direction.SUD;
+         setDirection(Direction.NORD);
       }
       // on renvoie key
       return key;
    }
 
 
-   // méthode qui permet de faire bouger le serpent
+   // méthode qui permet de faire avancer le serpent en fonction de la direction
    public void directionSerpent(JPanel panneau) {
-      // on vérifie si le jeu est en cours
-      if (running) {
-         // on vérifie si la direction du serpent est vers le nord
-         if (direction == Direction.NORD) {
-            // on déplace le serpent vers le nord
-            ((LinkedList<Point>) coordSerp).addFirst(new Point(((LinkedList<Point>) coordSerp).getFirst().x, ((LinkedList<Point>) coordSerp).getFirst().y - 1));
-            // on supprime la queue du serpent
-            ((LinkedList<Point>) coordSerp).removeLast();
-         }
-         // on vérifie si la direction du serpent est vers le sud
-         if (direction == Direction.SUD) {
-            // on déplace le serpent vers le sud
-            ((LinkedList<Point>) coordSerp).addFirst(new Point(((LinkedList<Point>) coordSerp).getFirst().x, ((LinkedList<Point>) coordSerp).getFirst().y + 1));
-            // on supprime la queue du serpent
-            ((LinkedList<Point>) coordSerp).removeLast();
-         }
-         // on vérifie si la direction du serpent est vers l'est
-         if (direction == Direction.EST) {
-            // on déplace le serpent vers l'est
-            ((LinkedList<Point>) coordSerp).addFirst(new Point(((LinkedList<Point>) coordSerp).getFirst().x + 1, ((LinkedList<Point>) coordSerp).getFirst().y));
-            // on supprime la queue du serpent
-            ((LinkedList<Point>) coordSerp).removeLast();
-         }
-         // on vérifie si la direction du serpent est vers l'ouest
-         if (direction == Direction.OUEST) {
-            // on déplace le serpent vers l'ouest
-            ((LinkedList<Point>) coordSerp).addFirst(new Point(((LinkedList<Point>) coordSerp).getFirst().x - 1, ((LinkedList<Point>) coordSerp).getFirst().y));
-            // on supprime la queue du serpent
-            ((LinkedList<Point>) coordSerp).removeLast();
-         }
+      // on récupère la tête du serpent
+      Point coordTete = ((LinkedList<Point>) coordSerp).getFirst();
+      // on récupère la queue du serpent
+      Point coordQueue = ((LinkedList<Point>) coordSerp).getLast();
+      // on récupère le JLabel de la tête du serpent
+      JLabel caseGrille = (JLabel) panneau.getComponent(coordTete.x + coordTete.y * xCoordCase);
+      // on récupère le JLabel de la queue du serpent
+      JLabel caseGrilleQueue = (JLabel) panneau.getComponent(coordQueue.x + coordQueue.y * xCoordCase);
+      // on change la couleur du JLabel de la tête du serpent
+      caseGrille.setBackground(Color.GREEN);
+      // on change la couleur du JLabel de la queue du serpent
+      caseGrilleQueue.setBackground(Color.BLACK);
+      // on récupère la direction du serpent avec notre méthode getDirection()
+      Direction direction = getDirection();
+      // on fait avancer le serpent en fonction de la direction
+      if(direction == Direction.EST) {
+         coordTete.x--;
       }
+      if(direction == Direction.OUEST) {
+         coordTete.x++;
+      }
+      if(direction == Direction.SUD) {
+         coordTete.y--;
+      }
+      if(direction == Direction.NORD) {
+         coordTete.y++;
+      }
+      // on ajoute la tête du serpent à la file
+      ((LinkedList<Point>) coordSerp).addFirst(coordTete);
+      // on supprime la queue du serpent à la file
+      ((LinkedList<Point>) coordSerp).removeLast();
    }
 
 
-
    // <-------------------------------------------------------------------------------------------------------------------------------------------->
-
-
 
 
 
@@ -273,36 +276,19 @@ public class GamePanel {
    // méthode qui permet de vérifier si le serpent a touché un mur ou c'est touché lui-même
    public void verifierCollision() {
       // on vérifie si le serpent a touché un mur
-      if (((LinkedList<Point>) coordSerp).getFirst().x < 0) {
-         running = false;
-      }
-      if (((LinkedList<Point>) coordSerp).getFirst().x > xCoordCase) {
-         running = false;
-      }
-      if (((LinkedList<Point>) coordSerp).getFirst().y < 0) {
-         running = false;
-      }
-      if (((LinkedList<Point>) coordSerp).getFirst().y > yCoordCase) {
-         running = false;
+      if (((LinkedList<Point>) coordSerp).getFirst().x < 0 || ((LinkedList<Point>) coordSerp).getFirst().x > xCoordCase || ((LinkedList<Point>) coordSerp).getFirst().y < 0 || ((LinkedList<Point>) coordSerp).getFirst().y > yCoordCase) {
+         // on arrête le jeu
+         stopGame();
       }
       // on vérifie si le serpent s'est touché lui-même
-      if (coordSerp.size() > bodyParts) {
-         for (int i = bodyParts; i < coordSerp.size(); i++) {
-            if (((LinkedList<Point>) coordSerp).getFirst().equals(((LinkedList<Point>) coordSerp).get(i))) {
-               running = false;
-            }
-         }
-      }
-      // si le jeu n'est pas en cours
-      if (!running) {
-         // on affiche un message
-         JOptionPane.showMessageDialog(null, "Game Over");
+      if (((LinkedList<Point>) coordSerp).contains(((LinkedList<Point>) coordSerp).getFirst())) {
+         // on arrête le jeu
+         stopGame();
       }
    }
 
 
    // <---------------------------------------------------------------------------------------------->
-
 
 
 
@@ -322,7 +308,7 @@ public class GamePanel {
       // si le nombre de pommes mangées est égal au nombre de pommes à manger
       if(applesEaten == applesToEat){
          // on arrête le jeu
-         running = false;
+         stopGame();
       }
    }
 
