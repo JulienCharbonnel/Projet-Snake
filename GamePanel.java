@@ -16,6 +16,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.lang.Thread;
 import java.awt.event.KeyListener;
+// import du timer
+import java.util.Timer;
 
 
 public class GamePanel {
@@ -37,11 +39,7 @@ public class GamePanel {
    // coordonnées de la pomme
    public int appleX;
    public int appleY;
-   // direction du serpent
-   public static Direction directionEst = Direction.EST;
-   public static Direction directionOuest = Direction.OUEST;
-   public static Direction directionNord = Direction.NORD;
-   public static Direction directionSud = Direction.SUD;
+   public Direction direction;
    // délai entre chaque déplacement du serpent
    public static int DELAY = 75;
    // timer qui permet de déplacer le serpent
@@ -132,6 +130,7 @@ public class GamePanel {
             panneau.add(caseGrille);
          }
       }
+
       /** // on centre le panneau au milieu de la fenêtre avec GridBagConstraint
       GridBagConstraints gbc = new GridBagConstraints();
       gbc.gridx = 0;
@@ -143,17 +142,6 @@ public class GamePanel {
       gbc.anchor = GridBagConstraints.CENTER;
 
       */
-
-      // <---------- Pomme ---------->
-      // on crée une pomme
-      nouvellePomme(panneau);
-
-      // <---------- Serpent ---------->
-      creerSerpent(panneau);
-
-      
-      // on ajoute le serpent sur la grille de jeu avec notre méthode creerSerpent()
-      //creerSerpent(panneau);
 
       // on ajoute le panneau à la fenêtre
       fenetre.add(panneau);
@@ -183,9 +171,6 @@ public class GamePanel {
             xCoordCase++;
             coordSerp.add(new Point(xCoordCase, yCoordCase));
             caseGrille = (JLabel) panneau.getComponent(xCoordCase * 25 + yCoordCase);
-
-            // on écoute les touches du clavier pour déplacer le serpent avec notre méthode ecouteDirectionSerpent()
-            ecouteDirectionSerpent();
          }
       }
    }
@@ -206,60 +191,84 @@ public class GamePanel {
 
 
    // méthode qui écoute les flèches directionnelles du clavier avec notre classe Direction
-   public int ecouteDirectionSerpent() {
-      Direction direction = getDirection();      
-      int key = 0;
-      if ((key == KeyEvent.VK_LEFT) && direction != Direction.EST) {
-         setDirection(Direction.EST);
-      }
-      if ((key == KeyEvent.VK_RIGHT) && direction != Direction.OUEST) {
-         setDirection(Direction.OUEST);
-      }
-      if ((key == KeyEvent.VK_UP) && direction != Direction.SUD) {
-         setDirection(Direction.SUD);
-      }
-      if ((key == KeyEvent.VK_DOWN) && direction != Direction.NORD) {
-         setDirection(Direction.NORD);
-      }
-      return key;
-   }
+   public void ecouteDirectionSerpent() {
+      // on écoute les touches du clavier
+      fenetre.addKeyListener(new KeyListener() {
+         @Override
+         public void keyPressed(KeyEvent e) {
+            // on récupère la touche du clavier
+            int key = e.getKeyCode();
+            // on récupère la direction du serpent
+            Direction direction = getDirection();
+            // on vérifie si la touche du clavier est une flèche directionnelle
+            if (key == KeyEvent.VK_LEFT && direction != Direction.EST) {
+               setDirection(Direction.OUEST);
+               System.out.println("OUEST");
+            }
+            if (key == KeyEvent.VK_RIGHT && direction != Direction.OUEST) {
+               setDirection(Direction.EST);
+            }
+            if (key == KeyEvent.VK_UP && direction != Direction.SUD) {
+               setDirection(Direction.NORD);
+            }
+            if (key == KeyEvent.VK_DOWN && direction != Direction.NORD) {
+               setDirection(Direction.SUD);
+            }
+         }
 
+         @Override
+         public void keyTyped(KeyEvent e) {            
+         }
+         @Override
+         public void keyReleased(KeyEvent e) {
+         }
+      });
+   }
 
    // méthode qui permet de faire avancer le serpent en fonction de la direction
    public void directionSerpent(JPanel panneau) {
-      // on récupère la tête du serpent
-      Point coordTete = ((LinkedList<Point>) coordSerp).getFirst();
-      // on récupère la queue du serpent
-      Point coordQueue = ((LinkedList<Point>) coordSerp).getLast();
-      // on récupère le JLabel de la tête du serpent
-      JLabel caseGrille = (JLabel) panneau.getComponent(coordTete.x + coordTete.y * xCoordCase);
-      // on récupère le JLabel de la queue du serpent
-      JLabel caseGrilleQueue = (JLabel) panneau.getComponent(coordQueue.x + coordQueue.y * xCoordCase);
-      // on change la couleur du JLabel de la tête du serpent
-      caseGrille.setBackground(Color.GREEN);
-      // on change la couleur du JLabel de la queue du serpent
-      caseGrilleQueue.setBackground(Color.BLACK);
-      // on récupère la direction du serpent avec notre méthode getDirection()
+      // on récupère la direction du serpent
       Direction direction = getDirection();
-      // on fait avancer le serpent en fonction de la direction
-      if(direction == Direction.EST) {
-         coordTete.x--;
+      // on récupère la tête du serpent
+      JLabel caseGrille = (JLabel) panneau.getComponent(((LinkedList<Point>) coordSerp).get(0).x + ((LinkedList<Point>) coordSerp).get(0).y * xCoordCase);
+      // on récupère la queue du serpent
+      JLabel caseGrilleQueue = (JLabel) panneau.getComponent(((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).x + ((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).y * xCoordCase);
+      // on vérifie la direction du serpent
+      if (direction == Direction.EST) {
+         // on augmente la coordonnée x de la tête du serpent
+         xCoordCase++;
+         // on ajoute la nouvelle tête du serpent à la file
+         ((LinkedList<Point>) coordSerp).addFirst(new Point(xCoordCase, yCoordCase));
+         // on change la couleur de la nouvelle tête du serpent
+         caseGrille.setBackground(Color.GREEN);
+         // on change la couleur de la queue du serpent
+         caseGrilleQueue.setBackground(Color.BLACK);
+         // on supprime la queue du serpent de la file
+         ((LinkedList<Point>) coordSerp).removeLast();
       }
-      if(direction == Direction.OUEST) {
-         coordTete.x++;
+      if (direction == Direction.OUEST) {
+         xCoordCase--;
+         ((LinkedList<Point>) coordSerp).addFirst(new Point(xCoordCase, yCoordCase));
+         caseGrille.setBackground(Color.GREEN);
+         caseGrilleQueue.setBackground(Color.BLACK);
+         ((LinkedList<Point>) coordSerp).removeLast();
       }
-      if(direction == Direction.SUD) {
-         coordTete.y--;
+      if (direction == Direction.NORD) {
+         yCoordCase--;
+         ((LinkedList<Point>) coordSerp).addFirst(new Point(xCoordCase, yCoordCase));
+         caseGrille.setBackground(Color.GREEN);
+         caseGrilleQueue.setBackground(Color.BLACK);
+         ((LinkedList<Point>) coordSerp).removeLast();
       }
-      if(direction == Direction.NORD) {
-         coordTete.y++;
+      if (direction == Direction.SUD) {
+         yCoordCase++;
+         ((LinkedList<Point>) coordSerp).addFirst(new Point(xCoordCase, yCoordCase));
+         caseGrille.setBackground(Color.GREEN);
+         caseGrilleQueue.setBackground(Color.BLACK);
+         ((LinkedList<Point>) coordSerp).removeLast();
       }
-      // on ajoute la tête du serpent à la file
-      ((LinkedList<Point>) coordSerp).addFirst(coordTete);
-      // on supprime la queue du serpent à la file
-      ((LinkedList<Point>) coordSerp).removeLast();
    }
-
+   
 
    // <-------------------------------------------------------------------------------------------------------------------------------------------->
 
@@ -317,15 +326,13 @@ public class GamePanel {
       }
    }
 
-   // méthode qui calcule la condition de défaite
-   public void checkDefeat(){
-      // si le nombre de pommes mangées est inférieur au nombre de pommes à manger
-      if(applesEaten < applesToEat){
-         // on arrête le jeu
-         stopGame();
-      }
-   }
 
+   // méthode qui permet d'arrêter le jeu
+   public void stopGame(){
+      // on arrête le jeu
+      running = false;
+   }
+   
    // méthode qui calcule le score
    public void calculateScore(){
       // on calcule le score
@@ -334,20 +341,35 @@ public class GamePanel {
 
    // méthode qui permet de commencer le jeu
    public void startGame(){
-      grille();
-   }
+      // on lance le jeu
+      running = true;
+      // on lance le timer
+      Timer timer = new Timer();
+      // on lance le timer
+      timer.scheduleAtFixedRate(new TimerTask() {
+         @Override
+         public void run() {
+            // on vérifie si le jeu est lancé
+            if(running) {
+               grille();
+               creerSerpent(panneau);
+               nouvellePomme(panneau);
+               ecouteDirectionSerpent();
+               directionSerpent(panneau);
+               verifierCollision();
+               mangerPomme();
+               updateScore();
+               checkVictory();
+               calculateScore();               
+            }
+            if(running == false) {
+               // on arrête le timer
+               timer.cancel();
+            }
 
-   // méthode qui permet d'arrêter le jeu
-   public void stopGame(){
-      // on arrête le timer
-      timer.cancel();
-      // on ferme la fenêtre
-      System.exit(0);
-   }
 
-   // méthode qui permet de savoir si le jeu est en cours
-   public boolean isRunning(){
-      return running;
+         }
+      }, 0, 100);
    }
 
    // <----------------------------------------------->
