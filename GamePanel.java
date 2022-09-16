@@ -15,6 +15,8 @@ import javax.swing.BorderFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.lang.Thread;
+import java.awt.event.KeyListener;
+
 
 public class GamePanel {
    // on crée une variable de type JFrame
@@ -36,13 +38,17 @@ public class GamePanel {
    public int appleX;
    public int appleY;
    // direction du serpent
-   Direction direction = Direction.EST;
+   public static Direction directionEst = Direction.EST;
+   public static Direction directionOuest = Direction.OUEST;
+   public static Direction directionNord = Direction.NORD;
+   public static Direction directionSud = Direction.SUD;
    // délai entre chaque déplacement du serpent
    public static int DELAY = 75;
    // timer qui permet de déplacer le serpent
    public static Timer timer;
    // booléen qui permet de savoir si le jeu est en cours ou non
    public boolean running = false;
+   public int numeroCase = 0;
    // classe qui permet de déplacer le serpent
    public int bodyParts = 6;
    // pommme mangée
@@ -181,7 +187,6 @@ public class GamePanel {
             // on écoute les touches du clavier pour déplacer le serpent avec notre méthode ecouteDirectionSerpent()
             ecouteDirectionSerpent();
          }
-
       }
    }
    
@@ -202,6 +207,7 @@ public class GamePanel {
 
    // méthode qui écoute les flèches directionnelles du clavier avec notre classe Direction
    public int ecouteDirectionSerpent() {
+      Direction direction = getDirection();      
       int key = 0;
       if ((key == KeyEvent.VK_LEFT) && direction != Direction.EST) {
          setDirection(Direction.EST);
@@ -215,7 +221,6 @@ public class GamePanel {
       if ((key == KeyEvent.VK_DOWN) && direction != Direction.NORD) {
          setDirection(Direction.NORD);
       }
-      // on renvoie key
       return key;
    }
 
