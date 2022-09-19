@@ -40,10 +40,6 @@ public class GamePanel {
    public int appleY;
    // direction du serpent
    public Direction direction;
-   public static Direction directionEst = Direction.EST;
-   public static Direction directionOuest = Direction.OUEST;
-   public static Direction directionNord = Direction.NORD;
-   public static Direction directionSud = Direction.SUD;
    // délai entre chaque déplacement du serpent
    public static int DELAY = 75;
    // timer qui permet de déplacer le serpent
@@ -111,6 +107,10 @@ public class GamePanel {
    public void setDirection(Direction direction) {
       this.direction = direction;
    }
+   // méthode qui permet de lancer le running
+   public void setRunning(boolean running) {
+      this.running = running;
+   }
 
    // <--------------------------------------------------------->
 
@@ -149,7 +149,6 @@ public class GamePanel {
       gbc.weightx = 1;
       gbc.weighty = 1;
       gbc.anchor = GridBagConstraints.CENTER;
-
       */
 
       // <---------- Pomme ---------->
@@ -332,15 +331,6 @@ public class GamePanel {
       }
    }
 
-   // méthode qui calcule la condition de défaite
-   public void checkDefeat(){
-      // si le nombre de pommes mangées est inférieur au nombre de pommes à manger
-      if(applesEaten < applesToEat){
-         // on arrête le jeu
-         stopGame();
-      }
-   }
-
    // méthode qui calcule le score
    public void calculateScore(){
       // on calcule le score
@@ -369,7 +359,6 @@ public class GamePanel {
             mangerPomme();
             verifierCollision();
             checkVictory();
-            checkDefeat();
             calculateScore();
             updateScore();
          }
@@ -388,11 +377,6 @@ public class GamePanel {
       timer.cancel();
       // on affiche le score
       JOptionPane.showMessageDialog(null, "Votre score est de " + score + " points");
-   }
-
-   // setter running
-   public void setRunning(boolean running) {
-      this.running = running;
    }
 
    // <----------------------------------------------->
