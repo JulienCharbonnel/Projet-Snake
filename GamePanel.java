@@ -251,7 +251,7 @@ public class GamePanel {
       // on récupère les coordonnées de la tête du serpent
       Point coordTete = getCoordTete();
       // en fonction de la direction du serpent on fait avancer le serpent dans la grille jusqu'à ce que la direction change
-      while(direction == Direction.NORD) {
+      while(direction == Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST || direction != Direction.EST) {
          // on récupère le JLabel de la case au dessus de la tête du serpent 
          caseGrille = (JLabel) panneau.getComponent(coordTete.x + (coordTete.y - 1) * xCoordCase);
          // on ajoute les coordonnées de la case au dessus de la tête du serpent à la file
@@ -262,19 +262,19 @@ public class GamePanel {
          coordTete = getCoordTete();
          // on supprime la dernière case du serpent
          coordSerp.remove();
-         while(direction == Direction.SUD) {
+         while(direction == Direction.SUD || direction != Direction.NORD || direction != Direction.OUEST || direction != Direction.EST) {
             caseGrille = (JLabel) panneau.getComponent(coordTete.x + (coordTete.y + 1) * xCoordCase);
             caseGrille.setBackground(Color.GREEN);
             coordSerp.add(new Point(coordTete.x, coordTete.y + 1));
             coordTete = getCoordTete();
             coordSerp.remove();
-            while(direction == Direction.OUEST) {
+            while(direction == Direction.OUEST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.EST) {
                caseGrille = (JLabel) panneau.getComponent(coordTete.x - 1 + coordTete.y * xCoordCase);
                caseGrille.setBackground(Color.GREEN);
                coordSerp.add(new Point(coordTete.x - 1, coordTete.y));
                coordTete = getCoordTete();
                coordSerp.remove();
-               while(direction == Direction.EST) {
+               while(direction == Direction.EST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST) {
                   caseGrille = (JLabel) panneau.getComponent(coordTete.x + 1 + coordTete.y * xCoordCase);
                   caseGrille.setBackground(Color.GREEN);
                   coordSerp.add(new Point(coordTete.x + 1, coordTete.y));
