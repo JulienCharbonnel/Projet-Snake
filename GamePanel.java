@@ -248,8 +248,8 @@ public class GamePanel {
    // méthode qui permet de faire avancer le serpent en fonction de la direction
    public void avancerSerpent(JPanel panneau) { 
       caseGrille = new JLabel();  
-      // on récupère les coordonnées de la tête du serpent
-      Point coordTete = getCoordTete();
+      // on récupère les coordonnées de la premiere case du serpent
+      Point coordTete = ((LinkedList<Point>) coordSerp).getFirst();
       // en fonction de la direction du serpent on fait avancer le serpent dans la grille jusqu'à ce que la direction change
       while(direction == Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST || direction != Direction.EST) {
          // on récupère le JLabel de la case au dessus de la tête du serpent 
