@@ -331,6 +331,16 @@ public class GamePanel {
       }
    }
 
+   // méthode qui permet d'arrêter le jeu
+   public void stopGame(){
+      // on arrête le jeu
+      running = false;
+      // on arrête le timer
+      timer.cancel();
+      // on affiche le score
+      JOptionPane.showMessageDialog(null, "Votre score est de " + score + " points");
+   }
+
    // méthode qui calcule le score
    public void calculateScore(){
       // on calcule le score
@@ -367,16 +377,6 @@ public class GamePanel {
             stopGame();
          }
       }
-   }
-
-   // méthode qui permet d'arrêter le jeu
-   public void stopGame(){
-      // on arrête le jeu
-      running = false;
-      // on arrête le timer
-      timer.cancel();
-      // on affiche le score
-      JOptionPane.showMessageDialog(null, "Votre score est de " + score + " points");
    }
 
    // <----------------------------------------------->
