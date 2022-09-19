@@ -327,8 +327,16 @@ public class GamePanel {
       // si le nombre de pommes mangées est égal au nombre de pommes à manger
       if(applesEaten == applesToEat){
          // on arrête le jeu
-         stopGame();
+         victoire();
       }
+   }
+
+   // méthode qui affiche un message de victoire et qui arrête le jeu
+   public void victoire() {
+      // on arrête le jeu
+      stopGame();
+      // on affiche un message de victoire
+      JOptionPane.showMessageDialog(null, "Vous avez gagné !");
    }
 
    // méthode qui permet d'arrêter le jeu
