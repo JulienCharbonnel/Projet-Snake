@@ -1,8 +1,6 @@
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.awt.Color;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -17,6 +15,10 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.lang.Thread;
 import java.awt.event.KeyListener;
+import java.awt.GridBagConstraints;
+// import de GridBagLayout
+import java.awt.GridBagLayout;
+
 
 
 public class GamePanel {
@@ -63,8 +65,10 @@ public class GamePanel {
    public static int yCoordCase = 0;
    // file Queue<E> qui contient les coordonnées des cases du serpent avec Point(x,y)
    public static Queue<Point> coordSerp = new LinkedList<Point>();
+   // on crée une seconde file pour pouvoir déplacer le serpent
+   public static Queue<Point> coordSerp2 = new LinkedList<Point>();
    // variable qui permet de connaitre la tete du serpent en fonction de coordSerp
-   public static Point teteSerpent = coordSerp.peek();
+   public static Point teteSerpent;
    public JLabel caseGrille;
    public TimerTask tache;
 
@@ -111,6 +115,10 @@ public class GamePanel {
    public void setRunning(boolean running) {
       this.running = running;
    }
+   // méthode qui permet de récupérer le running
+   public boolean getRunning() {
+      return running;
+   }
 
    // <--------------------------------------------------------->
 
@@ -120,7 +128,8 @@ public class GamePanel {
    // méthode qui permet de créer une grille de jeu
    protected void grille() {
       caseGrille = new JLabel();
-      fenetre = new JFrame("Snake");
+      fenetre = new JFrame("serpent");
+      fenetre.setLayout(new GridLayout(WIDTH / TAILLE_CASE, HEIGHT / TAILLE_CASE));
       panneau = new JPanel();
       panneau.setLayout(new GridLayout(25, 25, 1, 1));
       // méthode qui permet de redessiner la grille de jeu avec GridLayout
@@ -140,7 +149,7 @@ public class GamePanel {
             panneau.add(caseGrille);
          }
       }
-      /** // on centre le panneau au milieu de la fenêtre avec GridBagConstraint
+
       GridBagConstraints gbc = new GridBagConstraints();
       gbc.gridx = 0;
       gbc.gridy = 0;
@@ -149,7 +158,8 @@ public class GamePanel {
       gbc.weightx = 1;
       gbc.weighty = 1;
       gbc.anchor = GridBagConstraints.CENTER;
-      */
+      gbc.fill = GridBagConstraints.BOTH;
+      fenetre.add(panneau, gbc);
 
       // <---------- Pomme ---------->
       // on crée une pomme
@@ -163,7 +173,6 @@ public class GamePanel {
       //creerSerpent(panneau);
 
       // on ajoute le panneau à la fenêtre
-      fenetre.add(panneau);
       fenetre.setSize(WIDTH, HEIGHT);
       fenetre.pack();
       fenetre.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -176,34 +185,35 @@ public class GamePanel {
    // méthode qui créer le serpent avec un JLabel
    public void creerSerpent(JPanel panneau) {
       caseGrille = new JLabel();
-      // on prend 6 JLabel existant au milieu du panneau et on les ajoute à la file
-      for (int i = 0; i < PommeManger; i++) {
-         // on récupère les coordonnées du JLabel au centre du panneau
-         xCoordCase = 12;
-         yCoordCase = 12;
-         // on ajoute les coordonnées du JLabel au centre du panneau à la file
+      // on récupère les coordonnées du JLabel au centre du panneau
+      xCoordCase = 12;
+      yCoordCase = 12;
+      // on ajoute les coordonnées du JLabel au centre du panneau à la file
+      coordSerp.add(new Point(xCoordCase, yCoordCase));
+      // on récupère le JLabel au centre du panneau
+      caseGrille = (JLabel) panneau.getComponent(12 * 25 + 12);
+      // on change la couleur du JLabel au centre du panneau 6 fois en partant du centre
+      for(int j = 0; j < PommeManger; j++) {
+         caseGrille.setBackground(Color.GREEN);
+         xCoordCase++;
          coordSerp.add(new Point(xCoordCase, yCoordCase));
-         // on récupère le JLabel au centre du panneau
-         JLabel caseGrille = (JLabel) panneau.getComponent(12 * 25 + 12);
-         // on change la couleur du JLabel au centre du panneau 6 fois en partant du centre
-         for(int j = 0; j < PommeManger; j++) {
-            caseGrille.setBackground(Color.GREEN);
-            xCoordCase++;
-            coordSerp.add(new Point(xCoordCase, yCoordCase));
-            caseGrille = (JLabel) panneau.getComponent(xCoordCase * 25 + yCoordCase);
-         }
+         caseGrille = (JLabel) panneau.getComponent(xCoordCase * 25 + yCoordCase);
       }
    }
    
 
    // méthode qui permet de créer une pomme dans un JLabel de la grille de jeu aléatoirement
    public void nouvellePomme(JPanel panneau) {
+
       rand = new Random();
       // on ajoute une pomme aléatoire sur la grille de jeu
       appleX = rand.nextInt(xCoordCase);
       appleY = rand.nextInt(yCoordCase);
-      // on change la couleur de la case qui contient la pomme
-      panneau.getComponent(appleX + appleY * xCoordCase).setBackground(Color.RED);
+      setCoordPomme(new Point(appleX, appleY));
+      // on récupère le JLabel de la pomme
+      caseGrille = (JLabel) panneau.getComponent(getCoordPomme().x * 25 + getCoordPomme().y);
+      // on change la couleur du JLabel de la pomme
+      caseGrille.setBackground(Color.RED);
    }
 
 
@@ -211,7 +221,8 @@ public class GamePanel {
 
 
    // méthode qui écoute les flèches directionnelles du clavier avec notre classe Direction
-   public int ecouteDirectionSerpent() {
+   public void ecouteDirectionSerpent() {
+      fenetre = new JFrame();
       // on écoute les touches du clavier
       fenetre.addKeyListener(new KeyListener() {
          @Override
@@ -220,8 +231,7 @@ public class GamePanel {
             int touche = e.getKeyCode();
             // on vérifie si la touche du clavier est une flèche directionnelle
             if (touche == KeyEvent.VK_UP) {
-               // on change la direction du serpent
-               direction = Direction.NORD;               
+               direction = Direction.NORD;     
             }
             if (touche == KeyEvent.VK_DOWN) {
                direction = Direction.SUD;
@@ -240,45 +250,37 @@ public class GamePanel {
          public void keyTyped(KeyEvent e) {
          }
       });
-      return 0;
    }
-
 
 
    // méthode qui permet de faire avancer le serpent en fonction de la direction
    public void avancerSerpent(JPanel panneau) { 
-      caseGrille = new JLabel();  
-      // on récupère les coordonnées de la premiere case du serpent
-      Point coordTete = ((LinkedList<Point>) coordSerp).getFirst();
+      teteSerpent = ((LinkedList<Point>) coordSerp).peek();
+      caseGrille = new JLabel();
       // en fonction de la direction du serpent on fait avancer le serpent dans la grille jusqu'à ce que la direction change
-      while(direction == Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST || direction != Direction.EST) {
+      if(direction == Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST || direction != Direction.EST) {
          // on récupère le JLabel de la case au dessus de la tête du serpent 
-         caseGrille = (JLabel) panneau.getComponent(coordTete.x + (coordTete.y - 1) * xCoordCase);
+         caseGrille = (JLabel) panneau.getComponent(teteSerpent.x + (teteSerpent.y - 1) * xCoordCase);
          // on ajoute les coordonnées de la case au dessus de la tête du serpent à la file
-         coordSerp.add(new Point(coordTete.x, coordTete.y - 1));
+         coordSerp.add(new Point(teteSerpent.x, teteSerpent.y - 1));
          // on change la couleur du JLabel de la case au dessus de la tête du serpent
          caseGrille.setBackground(Color.GREEN);
-         // on récupère les coordonnées de la tête du serpent
-         coordTete = getCoordTete();
          // on supprime la dernière case du serpent
          coordSerp.remove();
-         while(direction == Direction.SUD || direction != Direction.NORD || direction != Direction.OUEST || direction != Direction.EST) {
-            caseGrille = (JLabel) panneau.getComponent(coordTete.x + (coordTete.y + 1) * xCoordCase);
+         if(direction == Direction.SUD || direction != Direction.NORD || direction != Direction.OUEST || direction != Direction.EST) {
+            caseGrille = (JLabel) panneau.getComponent(teteSerpent.x + (teteSerpent.y + 1) * xCoordCase);
             caseGrille.setBackground(Color.GREEN);
-            coordSerp.add(new Point(coordTete.x, coordTete.y + 1));
-            coordTete = getCoordTete();
+            coordSerp.add(new Point(teteSerpent.x, teteSerpent.y + 1));
             coordSerp.remove();
-            while(direction == Direction.OUEST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.EST) {
-               caseGrille = (JLabel) panneau.getComponent(coordTete.x - 1 + coordTete.y * xCoordCase);
+            if(direction == Direction.OUEST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.EST) {
+               caseGrille = (JLabel) panneau.getComponent(teteSerpent.x - 1 + teteSerpent.y * xCoordCase);
                caseGrille.setBackground(Color.GREEN);
-               coordSerp.add(new Point(coordTete.x - 1, coordTete.y));
-               coordTete = getCoordTete();
+               coordSerp.add(new Point(teteSerpent.x - 1, teteSerpent.y));
                coordSerp.remove();
-               while(direction == Direction.EST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST) {
-                  caseGrille = (JLabel) panneau.getComponent(coordTete.x + 1 + coordTete.y * xCoordCase);
+               if(direction == Direction.EST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST) {
+                  caseGrille = (JLabel) panneau.getComponent(teteSerpent.x + 1 + teteSerpent.y * xCoordCase);
                   caseGrille.setBackground(Color.GREEN);
-                  coordSerp.add(new Point(coordTete.x + 1, coordTete.y));
-                  coordTete = getCoordTete();
+                  coordSerp.add(new Point(teteSerpent.x + 1, teteSerpent.y));
                   coordSerp.remove();
                }
             }
@@ -292,7 +294,7 @@ public class GamePanel {
    // <----------------------- On s'occupe ici de la collision du serpent avec les murs et si il a manger une pomme ----------------------->
 
    // méthode qui permet de vérifier si le serpent a mangé une pomme
-   public void mangerPomme() {
+   public void verifierMangerPomme() {
       // on vérifie si le serpent a mangé une pomme
       if (((LinkedList<Point>) coordSerp).getFirst().equals(new Point(appleX, appleY))) {
          // on ajoute une case au serpent
@@ -365,26 +367,31 @@ public class GamePanel {
    }
 
    // méthode qui lance le jeu
-   public void run(){  
-      // on lance le timer
-      timer.schedule(tache, 0, 100); {
-         // on lance le jeu
-         setRunning(true);
-         if(running == true){
-            grille();
-            ecouteDirectionSerpent();
-            avancerSerpent(panneau);
-            mangerPomme();
-            verifierCollision();
-            checkVictory();
-            calculateScore();
-            updateScore();
+   public void startGame(){  
+      grille();
+      timer = new Timer();
+      setRunning(true);
+      // on recupere le running
+      running = getRunning();
+      tache = new TimerTask() {
+         public void run() {
+            // on vérifie si le jeu est en cours
+            if(running) {     
+               ecouteDirectionSerpent();
+               avancerSerpent(panneau);
+               verifierMangerPomme();
+               verifierCollision();
+               checkVictory();
+               calculateScore();
+               updateScore();
+            }
+            else{
+               tache.cancel();
+               stopGame();
+            }
          }
-         else{
-            // on arrête le jeu
-            stopGame();
-         }
-      }
+      };
+      timer.scheduleAtFixedRate(tache, 0, 100);
    }
 
    // <----------------------------------------------->

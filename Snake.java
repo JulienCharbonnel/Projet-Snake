@@ -6,6 +6,6 @@ public class Snake {
       // On apelle notre Classe GamePanel
       grilleJeux = new GamePanel();
       // on lance le jeu
-      grilleJeux.run();
+      grilleJeux.startGame();
    }
 }
