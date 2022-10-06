@@ -48,7 +48,6 @@ public class GamePanel {
    public static Timer timer;
    // booléen qui permet de savoir si le jeu est en cours ou non
    public boolean running = false;
-   public int numeroCase = 0;
    // classe qui permet de déplacer le serpent
    public int bodyParts = 6;
    // pommme mangée
@@ -71,7 +70,6 @@ public class GamePanel {
    public static Queue<Point> filePomme;
    // variable qui permet de connaitre la tete du serpent en fonction de coordSerp
    public static Point teteSerpent;
-   public JLabel milieu;
    public TimerTask tache;
    public JLabel caseGrille;
 
@@ -220,8 +218,8 @@ public class GamePanel {
       appleX = rand.nextInt(25);
       appleY = rand.nextInt(25);
       filePomme.add(new Point(appleX, appleY));
-      // on change la couleur du JLabel de la pomme
-      caseGrille = (JLabel) panneau.getComponent(appleX * 25 + appleY);
+      // on récupère un Jlbael aléatoirement dans la grille de jeu
+      caseGrille = (JLabel) panneau.getComponent((appleX * 25) + appleY);
       caseGrille.setBackground(Color.RED);
    }
 
@@ -368,7 +366,7 @@ public class GamePanel {
    public void updateScore() {
       // on met à jour le score
       score = bodyParts - 6;
-      JLabel scoreLabel = new JLabel("Score : " + score);
+      JLabel scoreLabel = new JLabel();
       // on affiche le score
       scoreLabel.setText("Score : " + score);
    }
@@ -380,27 +378,13 @@ public class GamePanel {
       setRunning(true);
       // on recupere le running
       running = getRunning();
-      tache = new TimerTask() {
-         public void run() {
-            // on vérifie si le jeu est en cours
-            if(running) {     
-               ecouteDirectionSerpent();
-               avancerSerpent();
-               verifierMangerPomme();
-               verifierCollision();
-               checkVictory();
-               calculateScore();
-               updateScore();
-            }
-            else{
-               tache.cancel();
-               stopGame();
-            }
-         }
-      };
-      timer.scheduleAtFixedRate(tache, 0, 100);
+      tache = new Run();
+      tache.run();      
    }
 
-   // <----------------------------------------------->
+
+   public void repaint() {
+      grille();
+   }
 
 }
