@@ -191,7 +191,7 @@ public class GamePanel extends JPanel{
       // on change la couleur du JLabel au centre du panneau 6 fois en partant du centre tout en ajoutant les coordonnées du JLabel à la file coordSerp
       for(int j = 0; j < PommeManger; j++) {
          caseGrille.setBackground(Color.GREEN);
-         coordSerp.add(new Point(xMilieuCase, yMilieuCase));
+         coordSerp.add(new Point(caseGrille.getX(), caseGrille.getY()));
          caseGrille = (JLabel) panneau.getComponent((xMilieuCase * 25) + yMilieuCase);
       }
    }
@@ -218,43 +218,53 @@ public class GamePanel extends JPanel{
    // <----------- On s'occupe ici des fleches directionnelles et de la direction du serpent ----------->
 
    EcouteDirectionSerpent ecouteDirectionSerpent = new EcouteDirectionSerpent();
+   
 
 
 
-
-
-
-   // méthode qui permet de faire avancer le serpent en fonction de la direction
-   public void avancerSerpent() { 
-      teteSerpent = ((LinkedList<Point>) coordSerp).peek();
-      caseGrille = new JLabel();
-      // en fonction de la direction du serpent on fait avancer le serpent dans la grille jusqu'à ce que la direction change
-      if(direction == Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST || direction != Direction.EST) {
-         // on récupère le JLabel de la case au dessus de la tête du serpent 
-         caseGrille = (JLabel) panneau.getComponent((teteSerpent.x - 1) * 25 + teteSerpent.y);
-         // on ajoute les coordonnées de la case au dessus de la tête du serpent à la file
-         coordSerp.add(new Point(teteSerpent.x, teteSerpent.y - 1));
-         // on change la couleur du JLabel de la case au dessus de la tête du serpent
-         caseGrille.setBackground(Color.GREEN);
-         // on supprime la dernière case du serpent
-         coordSerp.remove();
-         if(direction == Direction.SUD || direction != Direction.NORD || direction != Direction.OUEST || direction != Direction.EST) {
-            caseGrille = (JLabel) panneau.getComponent((teteSerpent.x + 1) * 25 + teteSerpent.y);
-            caseGrille.setBackground(Color.GREEN);
-            coordSerp.add(new Point(teteSerpent.x, teteSerpent.y + 1));
-            coordSerp.remove();
-            if(direction == Direction.OUEST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.EST) {
-               caseGrille = (JLabel) panneau.getComponent((teteSerpent.x) * 25 + teteSerpent.y - 1);
+   // méthode qui permet de faire avancer le serpent en fonction de la file_de_directions
+   public void avancerSerpent(){
+      // on recupere la file de directions
+      Queue<Direction> fileDeDirections =  ecouteDirectionSerpent.getFile_de_directions();
+      // On verifie que la file de directions n'est pas vide
+      if(!fileDeDirections.isEmpty()){
+         // on verifie la direction du serpent et on avance en conséquence
+         if(fileDeDirections.peek() == Direction.NORD){
+            // on avance le serpent le JLabel au nord du point d'origine en lui ajoutant 1 à z et en retirant ce qui est à 1 × z
+            caseGrille =  (JLabel) panneau.getComponent((int) (((((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getX() * (HEIGHT / TAILLE_CASE))  - (HEIGHT / TAILLE_CASE)) + ((LinkedList<Point>) coordSerp).get(coordSerp.size()  - 1).getY()));
+            // on verifie que le JLabel au nord du point d'origine ne rentre pas dans une case déjà contenant le serpent
+            if(caseGrille.getBackground() != Color.GREEN){
                caseGrille.setBackground(Color.GREEN);
-               coordSerp.add(new Point(teteSerpent.x - 1, teteSerpent.y));
-               coordSerp.remove();
-               if(direction == Direction.EST || direction != Direction.NORD || direction != Direction.SUD || direction != Direction.OUEST) {
-                  caseGrille = (JLabel) panneau.getComponent((teteSerpent.x) * 25 + teteSerpent.y + 1);
-                  caseGrille.setBackground(Color.GREEN);
-                  coordSerp.add(new Point(teteSerpent.x + 1, teteSerpent.y));
-                  coordSerp.remove();
-               }
+               coordSerp.add(new Point(caseGrille.getX(), caseGrille.getY()));
             }
+         }
+         if(fileDeDirections.peek() == Direction.SUD){
+            caseGrille = (JLabel) panneau.getComponent((int) (((((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getX() * (HEIGHT / TAILLE_CASE)) + (HEIGHT / TAILLE_CASE)) + ((LinkedList<Point>) coordSerp).get(coordSerp.size()  - 1).getY()));
+            if(caseGrille.getBackground() != Color.GREEN){
+               caseGrille.setBackground(Color.GREEN);
+               coordSerp.add(new Point(caseGrille.getX(), caseGrille.getY()));
+            }
+         }
+         if(fileDeDirections.peek() == Direction.OUEST){
+            caseGrille = (JLabel) panneau.getComponent((int) ((((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getX() * (HEIGHT / TAILLE_CASE))  + ((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getY()) - 1);
+            if(caseGrille.getBackground() != Color.GREEN){
+               caseGrille.setBackground(Color.GREEN);
+               coordSerp.add(new Point(caseGrille.getX(), caseGrille.getY()));
+            }
+         }
+         if(fileDeDirections.peek() == Direction.EST){
+            caseGrille = (JLabel) panneau.getComponent((int) ((((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getX() * (HEIGHT / TAILLE_CASE))  + ((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getY()) + 1);
+            if(caseGrille.getBackground() != Color.GREEN){
+               caseGrille.setBackground(Color.GREEN);
+               coordSerp.add(new Point(caseGrille.getX(), caseGrille.getY()));
+            }
+         }
+      }else{
+         // si la file de direction est vide alors le serpent continue sur son axe Y en avançant tout droit
+         caseGrille =  (JLabel) panneau.getComponent((int) (((((LinkedList<Point>) coordSerp).get(coordSerp.size() - 1).getX() * (HEIGHT / TAILLE_CASE)) + (HEIGHT / TAILLE_CASE)) + ((LinkedList<Point>) coordSerp).get(coordSerp.size()  - 1).getY()));
+         if(caseGrille.getBackground() != Color.GREEN){
+            caseGrille.setBackground(Color.GREEN);
+            coordSerp.add(new Point(caseGrille.getX(), caseGrille.getY()));
          }
       }
    }
