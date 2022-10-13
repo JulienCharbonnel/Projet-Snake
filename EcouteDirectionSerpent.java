@@ -7,8 +7,8 @@ import java.awt.event.KeyEvent;
 public class EcouteDirectionSerpent implements KeyListener{
 
    // constructeur
-   public EcouteDirectionSerpent(){
-
+   public EcouteDirectionSerpent(Queue<Direction> directionQueue) {
+      this.file_de_directions = directionQueue;
    }
 
    // Les directions demandées par l'utilisateur sont stockées dans une file
