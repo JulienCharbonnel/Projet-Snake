@@ -8,7 +8,6 @@ import javax.swing.JPanel;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import java.awt.Dimension;
@@ -287,8 +286,26 @@ public class GamePanel{
       // on arrête le timer
       timer.cancel();
       // on affiche une pop-up pour dire que le joueur a perdu
-      JOptionPane.showMessageDialog(null, "Vous avez perdu ! Votre score est de : ");
+      JOptionPane.showMessageDialog(null, "Vous avez perdu !");
+      relancerUneNouvellePartie();
    }
+
+   // méthode qui permet de relancer une nouvelle partie
+   public void relancerUneNouvellePartie(){
+      // on demande au joueur s'il veut rejouer
+      int reponse = JOptionPane.showConfirmDialog(null, "Voulez-vous rejouer ?", "Rejouer ?", JOptionPane.YES_NO_OPTION);
+      // si le joueur veut rejouer
+      if(reponse == JOptionPane.YES_OPTION){
+         Accueil accueil = new Accueil();
+         accueil.afficherAccueil();
+         // on ferme la fenêtre de jeu
+         fenetre.dispose();
+      }else{
+         // on ferme la fenêtre de jeu
+         fenetre.dispose();
+      }
+   }
+
 
    // méthode qui lance le jeu
    public void startGame(){  
@@ -296,7 +313,7 @@ public class GamePanel{
       commencer = new Run(this);
       timer = new Timer();
       setRunning(true);
-      timer.scheduleAtFixedRate(commencer, 0, 100);
+      timer.scheduleAtFixedRate(commencer, 0, 200);
    }
 
    public void raffraichir(){
