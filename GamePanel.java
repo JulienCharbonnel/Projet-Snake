@@ -39,13 +39,11 @@ public class GamePanel{
    // timer qui permet de déplacer le serpent
    public static Timer timer;
    // booléen qui permet de savoir si le jeu est en cours ou non
-   public volatile boolean running = false;
+   public volatile boolean running;
    // classe qui permet de déplacer le serpent
-   public int bodyParts = 6;
+   public int bodyParts;
    // pommme mangée
    public int applesEaten = 0;
-   // score a atteindre
-   public static int applesToEat = 10;
    // le score actuel
    public int score = 0;
    public static Random rand;
@@ -76,6 +74,8 @@ public class GamePanel{
       ecouteDirectionSerpent = new EcouteDirectionSerpent(fileDeDirections);
       fenetre.addKeyListener(ecouteDirectionSerpent);
       direction = Direction.NORD;
+      bodyParts = 6;
+      running = true;
    }
 
 
@@ -176,10 +176,10 @@ public class GamePanel{
       xMilieuCase = 12;
       yMilieuCase = 12;
       // on change la couleur du JLabel au centre du panneau 6 fois en partant du centre tout en ajoutant les coordonnées du JLabel à la file coordSerp
-      for(int j = 0; j < PommeManger; j++) {
+      for(int j = 0; j < bodyParts; j++) {
          caseGrille = (JLabel) panneau.getComponent(((yMilieuCase - j) * TAILLE_CASE + xMilieuCase));
          caseGrille.setBackground(Color.GREEN);
-         teteSerpent = new Point(caseGrille.getX(), caseGrille.getY());
+         teteSerpent = new Point(xMilieuCase , yMilieuCase - j);
          coordSerp.add(teteSerpent);
       }
    }
@@ -217,21 +217,27 @@ public class GamePanel{
       }
    }
 
-   // méthode qui permet de vérifier si le serpent a touché un mur ou c'est touché lui-même
-   public void verifierCollision() {
+   // méthode qui permet de vérifier si le serpent a touché un mur
+   public boolean verifierCollisionMur() {
       // on vérifie si le serpent a touché un mur
-      if (teteSerpent.x < 0 || teteSerpent.x >= TAILLE_CASE ||
-         teteSerpent.y < 0 || teteSerpent.y >= TAILLE_CASE) {
-      {
+      if(teteSerpent.x < 0 || teteSerpent.x >= TAILLE_CASE ||
+         teteSerpent.y < 0 || teteSerpent.y >= TAILLE_CASE){
          stopGame();
+         return false;
       }
+      return true;
+   }
+
+   public boolean verifierCollisionCoorp(){
       // on vérifie si le serpent s'est touché lui-même
       if (coordSerp.contains(teteSerpent)) {
          stopGame();
+         return false;
       }
-      }
+      return true;
    }
 
+   
 
    // méthode qui permet de faire avancer le serpent en fonction de la file_de_directions
    public void avancerSerpent(){
@@ -239,16 +245,19 @@ public class GamePanel{
       if(!fileDeDirections.isEmpty()){
          direction = fileDeDirections.remove();    
       }
-      // on fait avancer le serpent avec la direction grace a getDecalageX et getDecalageY dans la class Direction
-      teteSerpent = new Point(teteSerpent.x + direction.getDecalageX(), teteSerpent.y + direction.getDecalageY());
-      // on verifie si il y a collision avec un mur ou avec son corp
-      verifierCollision();
-      verifierMangerPomme();
-      coordSerp.add(teteSerpent);
-      // on change la couleur du JLabel de la tête en verte
-      caseGrille = (JLabel) panneau.getComponent(((teteSerpent.y)*TAILLE_CASE) + teteSerpent.x);
-   }
    
+      teteSerpent = new Point(teteSerpent.x + direction.getDecalageX(), teteSerpent.y + direction.getDecalageY());
+
+      // on vérifie si le serpent s'est touché lui-même ou s'il a touché un mur
+      if(verifierCollisionMur() && verifierCollisionCoorp()){
+         verifierMangerPomme();
+         coordSerp.add(teteSerpent);
+         // on recupere le JLabel de la case juste devant la tête du serpent
+         caseGrille = (JLabel) panneau.getComponent((teteSerpent.y * TAILLE_CASE) + teteSerpent.x);
+         caseGrille.setBackground(Color.GREEN);
+      }  
+   }
+      
    // <-------------------------------------------------------------------------------------------------------------------------------------------->
 
 
@@ -278,7 +287,7 @@ public class GamePanel{
       commencer = new Run(this);
       timer = new Timer();
       setRunning(true);
-      timer.scheduleAtFixedRate(commencer, 0, 200);
+      timer.scheduleAtFixedRate(commencer, 0, 500);
    }
 
    public void raffraichir(){

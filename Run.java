@@ -12,13 +12,10 @@ public class Run extends TimerTask{
 
    @Override
    public void run() {
-      gamePanel = new GamePanel();
       boolean running = gamePanel.getRunning();
       // on vérifie si le jeu est en cours
       if(running){
          gamePanel.avancerSerpent();
-         gamePanel.verifierMangerPomme();
-         gamePanel.verifierCollision();
          gamePanel.updateScore();
          gamePanel.raffraichir();
       }
