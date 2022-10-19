@@ -16,7 +16,6 @@ public class Run extends TimerTask{
       // on vérifie si le jeu est en cours
       if(running){
          gamePanel.avancerSerpent();
-         gamePanel.updateScore();
          gamePanel.raffraichir();
       }
       else{

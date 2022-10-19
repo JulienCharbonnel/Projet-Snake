@@ -86,6 +86,7 @@ public class Direction {
     * Renvoie la direction produite par un quart de tour dans le sens anti-horaire.
     *
     * @return la nouvelle direction
+    *
     */
    public Direction quartDeTourAnti() {
      if (this == Direction.NORD)
@@ -96,6 +97,18 @@ public class Direction {
        return Direction.EST;
      else // if (this == Direction.OUEST)
        return Direction.SUD;
+   }
+
+   public Direction demiTour(){
+    // si la direction est oposée à la direction actuelle
+    if (this == Direction.NORD)
+       return Direction.SUD;
+    else if (this == Direction.EST)
+       return Direction.OUEST;
+    else if (this == Direction.SUD)
+       return Direction.NORD;
+    else // if (this == Direction.OUEST)
+       return Direction.EST;
    }
  
  }
