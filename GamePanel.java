@@ -36,7 +36,7 @@ public class GamePanel{
    // direction du serpent
    public Direction direction;
    // délai entre chaque déplacement du serpent
-   public static int DELAY = 75;
+   public static int DELAY = 175;
    // timer qui permet de déplacer le serpent
    public static Timer timer;
    // booléen qui permet de savoir si le jeu est en cours ou non
@@ -63,6 +63,7 @@ public class GamePanel{
    private EcouteDirectionSerpent ecouteDirectionSerpent;
    Queue<Direction> fileDeDirections;
    Queue<Direction> fileDeDirectionPrecedente;
+   private Score scoreJoueur;
 
    // constructeur de la classe GamePanel
    public GamePanel(){
@@ -79,6 +80,7 @@ public class GamePanel{
       croissance = 0;
       running = true;
       score = 0;
+      scoreJoueur = new Score();
    }
 
 
@@ -217,6 +219,8 @@ public class GamePanel{
          croissance++;
          // on génère une nouvelle pomme
          nouvellePomme();
+         int score = scoreJoueur.getScore();
+         scoreJoueur.setScore(score + 1);
       }
    }
 
@@ -286,7 +290,7 @@ public class GamePanel{
       // on arrête le timer
       timer.cancel();
       // on affiche une pop-up pour dire que le joueur a perdu
-      JOptionPane.showMessageDialog(null, "Vous avez perdu !");
+      JOptionPane.showMessageDialog(null, "Vous avez perdu !" + "\n" + "Votre score est de : " + scoreJoueur.getScore());
       relancerUneNouvellePartie();
    }
 
@@ -313,7 +317,7 @@ public class GamePanel{
       commencer = new Run(this);
       timer = new Timer();
       setRunning(true);
-      timer.scheduleAtFixedRate(commencer, 0, 200);
+      timer.scheduleAtFixedRate(commencer, 0, 160);
    }
 
    public void raffraichir(){
